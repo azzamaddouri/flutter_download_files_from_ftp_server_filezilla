@@ -40,6 +40,7 @@ Future<File> localFile(String fileName) async {
   final path = await _localPath;
   return File('$path/$fileName');
 }
+
 // Download file
 Future<File> downloadFileFromFTP() async {
   FTPConnect ftpConnect = FTPConnect('files.000webhost.com',
@@ -55,15 +56,16 @@ Future<File> downloadFileFromFTP() async {
     return downloadedFile;
   } on SocketException catch (e) {
     print('SocketException: ${e.message}');
-     return File("");
+    return File("");
   } on FTPException catch (e) {
     print('FTPException: ${e.message}');
-     return File("");
+    return File("");
   } catch (e) {
     print('Error: ${e.toString()}');
     return File("");
   }
 }
+
 // Read data from the file
 Future<String> readContent() async {
   try {
@@ -74,4 +76,10 @@ Future<String> readContent() async {
   } catch (e) {
     return '';
   }
+}
+
+// Write to the file
+Future<File> writeContent() async {
+  File downloadedFile = await downloadFileFromFTP();
+  return downloadedFile.writeAsString("");
 }
