@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
           child: ElevatedButton(
             child: Text('Download file from FTP'),
             onPressed: () async {
-              await downloadFileFromFTP();
+              await readContent();
             },
           ),
         ),
@@ -29,25 +29,49 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> downloadFileFromFTP() async {
+// Find the correct local path
+Future<String> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  return directory.path;
+}
+
+// Create a reference to the file location
+Future<File> localFile(String fileName) async {
+  final path = await _localPath;
+  return File('$path/$fileName');
+}
+// Download file
+Future<File> downloadFileFromFTP() async {
   FTPConnect ftpConnect = FTPConnect('files.000webhost.com',
       user: 'azzamaddouri', pass: '09948498');
   try {
     String fileName = 'ZPA.kml';
     await ftpConnect.connect();
     print('Connected to FTP server');
-    Directory downloadsDirectory = await getApplicationDocumentsDirectory();
-    String downloadsPath = downloadsDirectory.path;
-    File downloadedFile = File('$downloadsPath/$fileName');
-    bool res = await ftpConnect.downloadFile(
-        fileName, /* The file I'm gonna write in */ downloadedFile);
+    File downloadedFile = await localFile(fileName);
+    bool res = await ftpConnect.downloadFile(fileName, downloadedFile);
     await ftpConnect.disconnect();
     print('Download successful: $res');
+    return downloadedFile;
   } on SocketException catch (e) {
     print('SocketException: ${e.message}');
+     return File("");
   } on FTPException catch (e) {
     print('FTPException: ${e.message}');
+     return File("");
   } catch (e) {
     print('Error: ${e.toString()}');
+    return File("");
+  }
+}
+// Read data from the file
+Future<String> readContent() async {
+  try {
+    File downloadedFile = await downloadFileFromFTP();
+    final contents = await downloadedFile.readAsString();
+    print(contents);
+    return contents;
+  } catch (e) {
+    return '';
   }
 }
