@@ -34,6 +34,8 @@ dependencies:
   ftpconnect: ^2.0.2
   path_provider: ^2.0.14
   permission_handler: ^10.2.0
+  flutter_archive: ^5.0.0
+  archive: ^3.3.6
 
 dev_dependencies:
   flutter_lints: ^2.0.0
