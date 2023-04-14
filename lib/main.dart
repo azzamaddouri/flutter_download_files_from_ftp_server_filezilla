@@ -36,32 +36,38 @@ Future<String> get _localPath async {
   return directory.path;
 }
 
-// Create a reference to the file location
-Future<File> localFile(String fileName) async {
+Future<Directory> createDownloadsDirectory() async {
   final path = await _localPath;
   final downloadsDir = Directory('$path/Download');
-  await downloadsDir.create(recursive: true);
-  File downloadedFile = File('$path/Download/$fileName');
+  if (!downloadsDir.existsSync()) {
+    await downloadsDir.create(recursive: true);
+  }
+  return downloadsDir;
+}
 
+// Create a reference to the file location
+Future<File> localFile(String fileName) async {
+  final downloadsDir = await createDownloadsDirectory();
+  File downloadedFile = File(downloadsDir.path + '$fileName');
   return downloadedFile;
 }
 
 // Download file
 Future<File> downloadFileFromFTP() async {
-  FTPConnect ftpConnect = FTPConnect('files.000webhost.com',
-      user: 'azzamaddouri', pass: 'azza');
+  FTPConnect ftpConnect =
+      FTPConnect('files.000webhost.com', user: 'azzamaddouri', pass: 'azza');
   try {
     String fileName = 'Chambres.zip';
     await ftpConnect.connect();
     print('Connected to FTP server');
-    File downloadedFile = await localFile(fileName);
+    File _localFile = await localFile(fileName);
 
     print('Done');
-    bool res = await ftpConnect.downloadFile(fileName, downloadedFile);
-    print(downloadedFile);
+    bool res = await ftpConnect.downloadFile(fileName, _localFile);
+    print(_localFile);
     await ftpConnect.disconnect();
     print('Download successful: $res');
-    return downloadedFile;
+    return _localFile;
   } on SocketException catch (e) {
     print('SocketException: ${e.message}');
     return File("");
